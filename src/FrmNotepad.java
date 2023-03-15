@@ -3,15 +3,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+
+import static jdk.jfr.consumer.EventStream.openFile;
 
 public class FrmNotepad extends JFrame implements ActionListener, DocumentListener {
 
     private JTextArea txtFile = null;
-    private String fileName = "C:\\_Federico\\Programmazione\\java\\2023-03\\Notepad\\Notepad\\src\\example.txt";
+    private String fileName = null;
     private Boolean modified = false;
     private JMenuItem mniNew = null;
     private JMenuItem mniOpen = null;
@@ -20,7 +19,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     private JMenuItem mniExit = null;
     private FrmNotepad() {
 
-        setTitle("MyNotepad");
+        setTitle("Notepad");
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -65,23 +64,29 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
         this.txtFile.getDocument().addDocumentListener(this);
 
+        this.mniNew.addActionListener(this);
+        this.mniOpen.addActionListener(this);
+        this.mniSave.addActionListener(this);
+        this.mniSaveAs.addActionListener(this);
+        this.mniExit.addActionListener(this);
+
         this.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                super.windowClosing(e);
-                System.out.println(modified);
-                System.exit(0);
+                exitApp();
             }
         });
     }
 
     public void populate() {
 
+        this.txtFile.setText("");
+        this.setTitle(this.fileName == null? "[Untitled]":this.fileName);
+        if(this.fileName == null) return;
         try {
 
-            this.txtFile.setText("");
-            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            BufferedReader br = new BufferedReader(new FileReader(this.fileName));
             String line;
             while((line = br.readLine()) != null)
                 this.txtFile.append(line + "\n");
@@ -98,6 +103,52 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     @Override
     public void actionPerformed(ActionEvent e) {
 
+        if(e.getSource() == this.mniNew) newFile();
+        if(e.getSource() == this.mniOpen) openFile();
+        if(e.getSource() == this.mniSave) saveFile();
+        if(e.getSource() == this.mniSaveAs) saveAsFile();
+        if(e.getSource() == this.mniExit) exitApp();
+    }
+
+    private void exitApp() {
+
+        if(!modified) System.exit(0);
+        JOptionPane.showConfirmDialog(this,
+                "File not Saved. Save it now?", "Alert",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void saveAsFile() {
+        JFileChooser fc = new JFileChooser();
+        int rc = fc.showOpenDialog(this);
+        if(rc != JFileChooser.APPROVE_OPTION) return;
+        this.fileName = fc.getSelectedFile().getAbsolutePath();
+        saveFile();
+    }
+
+    private void saveFile() {
+
+        try {
+            PrintWriter pw = new PrintWriter(new FileWriter(this.fileName));
+            pw.print(txtFile.getText());
+            pw.close();
+            modified = false;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void openFile() {
+        JFileChooser fc = new JFileChooser();
+        int rc = fc.showOpenDialog(this);
+        if(rc != JFileChooser.APPROVE_OPTION) return;
+        this.fileName = fc.getSelectedFile().getAbsolutePath();
+        populate();
+    }
+
+    private void newFile() {
+
+
     }
 
     //DOCUMENT LISTENER
@@ -110,6 +161,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
     @Override
     public void changedUpdate(DocumentEvent e) { this.modified = true; }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new FrmNotepad());
