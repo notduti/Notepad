@@ -4,6 +4,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.jar.JarFile;
 
 import static jdk.jfr.consumer.EventStream.openFile;
 
@@ -112,18 +113,27 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
     private void exitApp() {
 
-        if(!modified) System.exit(0);
-        JOptionPane.showConfirmDialog(this,
+        if(modified == false) System.exit(0);
+        int choice = JOptionPane.showConfirmDialog(this,
                 "File not Saved. Save it now?", "Alert",
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if(choice == 0) {
+
+            saveFile();
+            System.exit(0);
+        }
+        //this.modified = false;
     }
 
     private void saveAsFile() {
+
         JFileChooser fc = new JFileChooser();
-        int rc = fc.showOpenDialog(this);
+        int rc = fc.showSaveDialog(this);
         if(rc != JFileChooser.APPROVE_OPTION) return;
         this.fileName = fc.getSelectedFile().getAbsolutePath();
         saveFile();
+        populate();
     }
 
     private void saveFile() {
@@ -132,13 +142,14 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
             PrintWriter pw = new PrintWriter(new FileWriter(this.fileName));
             pw.print(txtFile.getText());
             pw.close();
-            modified = false;
+            this.modified = false;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void openFile() {
+
         JFileChooser fc = new JFileChooser();
         int rc = fc.showOpenDialog(this);
         if(rc != JFileChooser.APPROVE_OPTION) return;
@@ -147,8 +158,8 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     }
 
     private void newFile() {
-
-
+        saveFile();
+        saveAsFile();
     }
 
     //DOCUMENT LISTENER
