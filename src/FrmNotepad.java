@@ -39,10 +39,10 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
 
         JMenu mnuFile = new JMenu("File");
-        this.mniNew = new JMenuItem("New");
-        this.mniOpen = new JMenuItem("Open");
+        this.mniNew = new JMenuItem("New...");
+        this.mniOpen = new JMenuItem("Open...");
         this.mniSave = new JMenuItem("Save");
-        this.mniSaveAs = new JMenuItem("Save As");
+        this.mniSaveAs = new JMenuItem("Save As...");
         this.mniExit = new JMenuItem("Exit");
 
         KeyStroke keyStrokeToNew
@@ -51,8 +51,12 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
         KeyStroke keyStrokeToOpen
                 = KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK);
 
-        this.mniNew.setAccelerator(keyStrokeToNew);;
-        this.mniOpen.setAccelerator(keyStrokeToOpen);;
+        KeyStroke keyStrokeToSave
+                = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
+
+        this.mniNew.setAccelerator(keyStrokeToNew);
+        this.mniOpen.setAccelerator(keyStrokeToOpen);
+        this.mniSave.setAccelerator(keyStrokeToSave);
 
         mnuFile.add(this.mniNew);
         mnuFile.add(this.mniOpen);
@@ -122,7 +126,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
     private void exitApp() {
 
-        if(modified == false) System.exit(0);
+        if(this.modified == false) System.exit(0);
         int choice = JOptionPane.showConfirmDialog(this,
                 "File not Saved. Save it now?", "Alert",
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -132,6 +136,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
             saveFile();
             System.exit(0);
         }
+        if(choice == 1) System.exit(1);
         //this.modified = false;
     }
 
@@ -147,6 +152,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
     private void saveFile() {
 
+        if(this.fileName == null) saveAsFile();
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(this.fileName));
             pw.print(txtFile.getText());
@@ -167,7 +173,21 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     }
 
     private void newFile() {
-        saveFile();
+
+        if(this.txtFile.getText().compareTo("") != 0) {
+
+            if(this.modified != false) {
+                int choice = JOptionPane.showConfirmDialog(this,
+                        "File not Saved. Save it now?", "Alert",
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+                if(choice == 0) saveFile();
+                else if(choice == 1) {}
+                else if(choice == 2) return;
+            }
+        }
+        this.fileName = null;
+        this.txtFile.setText("");
         saveAsFile();
     }
 
