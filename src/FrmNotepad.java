@@ -45,6 +45,15 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
         this.mniSaveAs = new JMenuItem("Save As");
         this.mniExit = new JMenuItem("Exit");
 
+        KeyStroke keyStrokeToNew
+                = KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK);
+
+        KeyStroke keyStrokeToOpen
+                = KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK);
+
+        this.mniNew.setAccelerator(keyStrokeToNew);;
+        this.mniOpen.setAccelerator(keyStrokeToOpen);;
+
         mnuFile.add(this.mniNew);
         mnuFile.add(this.mniOpen);
         mnuFile.add(this.mniSave);
