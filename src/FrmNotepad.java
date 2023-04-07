@@ -1,6 +1,9 @@
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -8,7 +11,7 @@ import java.util.jar.JarFile;
 
 import static jdk.jfr.consumer.EventStream.openFile;
 
-public class FrmNotepad extends JFrame implements ActionListener, DocumentListener {
+public class FrmNotepad extends JFrame implements ActionListener, DocumentListener, CaretListener {
 
     private JTextArea txtFile = null;
     private String fileName = null;
@@ -18,6 +21,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     private JMenuItem mniSave = null;
     private JMenuItem mniSaveAs = null;
     private JMenuItem mniExit = null;
+    private JLabel lblStatus = null;
     private FrmNotepad() {
 
         setTitle("Notepad");
@@ -33,10 +37,22 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
     public void initUI() {
 
-        //FILE MENU
+        pnlNorth();
+        pnlCenter();
+        pnlSouth();
+
+        this.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                exitApp();
+            }
+        });
+    }
+
+    private void pnlNorth() {
 
         JMenuBar mnbFile = new JMenuBar();
-
 
         JMenu mnuFile = new JMenu("File");
         this.mniNew = new JMenuItem("New...");
@@ -54,6 +70,14 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
         KeyStroke keyStrokeToSave
                 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
 
+        Icon icnNew = UIManager.getIcon("FileView.fileIcon");
+        Icon icnOpen = UIManager.getIcon("FileChooser.upFolderIcon");
+        Icon icnSave = UIManager.getIcon("FileView.floppyDriveIcon");
+
+        this.mniNew.setIcon(icnNew);
+        this.mniOpen.setIcon(icnOpen);
+        this.mniSave.setIcon(icnSave);
+
         this.mniNew.setAccelerator(keyStrokeToNew);
         this.mniOpen.setAccelerator(keyStrokeToOpen);
         this.mniSave.setAccelerator(keyStrokeToSave);
@@ -69,7 +93,13 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
         this.add(mnbFile, BorderLayout.NORTH);
 
-
+        this.mniNew.addActionListener(this);
+        this.mniOpen.addActionListener(this);
+        this.mniSave.addActionListener(this);
+        this.mniSaveAs.addActionListener(this);
+        this.mniExit.addActionListener(this);
+    }
+    private void pnlCenter() {
 
         this.txtFile = new JTextArea();
         JScrollPane pnlCenter = new JScrollPane(this.txtFile);
@@ -77,20 +107,15 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
         this.add(pnlCenter, BorderLayout.CENTER);
 
         this.txtFile.getDocument().addDocumentListener(this);
+        this.txtFile.addCaretListener(this);
+    }
+    private void pnlSouth() {
 
-        this.mniNew.addActionListener(this);
-        this.mniOpen.addActionListener(this);
-        this.mniSave.addActionListener(this);
-        this.mniSaveAs.addActionListener(this);
-        this.mniExit.addActionListener(this);
+        JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        this.lblStatus = new JLabel("Line: 1 - Column: 1");
+        pnlSouth.add(this.lblStatus);
 
-        this.addWindowListener(new WindowAdapter() {
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                exitApp();
-            }
-        });
+        this.add(pnlSouth, BorderLayout.SOUTH);
     }
 
     public void populate() {
@@ -203,8 +228,31 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     public void changedUpdate(DocumentEvent e) { this.modified = true; }
 
 
+    @Override
+    public void caretUpdate(CaretEvent e) {
+
+        JTextArea curr = (JTextArea) e.getSource();
+        int lines = 1, columns = 1;
+
+        int caretpos = curr.getCaretPosition();
+
+        try {
+            lines = curr.getLineOfOffset(caretpos);
+            columns = caretpos - curr.getLineStartOffset(lines);
+            lines += 1;
+        } catch (BadLocationException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        updateStatus(lines, columns);
+    }
+
+    private void updateStatus(int lines, int columns) {
+
+        this.lblStatus.setText("Line: " + lines + " - Column: " + columns);
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new FrmNotepad());
     }
-
-  }
+}
