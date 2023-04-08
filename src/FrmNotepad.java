@@ -7,9 +7,6 @@ import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.jar.JarFile;
-
-import static jdk.jfr.consumer.EventStream.openFile;
 
 public class FrmNotepad extends JFrame implements ActionListener, DocumentListener, CaretListener {
 
@@ -21,6 +18,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     private JMenuItem mniSave = null;
     private JMenuItem mniSaveAs = null;
     private JMenuItem mniExit = null;
+    private JLabel lblWords = null;
     private JLabel lblStatus = null;
     private FrmNotepad() {
 
@@ -111,9 +109,18 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     }
     private void pnlSouth() {
 
-        JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel pnlSouth = new JPanel(new GridLayout(1, 2));
+
+        JPanel pnlWords = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        this.lblWords = new JLabel("Words: 0");
+        pnlWords.add(this.lblWords);
+
+        JPanel pnlStatus = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         this.lblStatus = new JLabel("Line: 1 - Column: 1");
-        pnlSouth.add(this.lblStatus);
+        pnlStatus.add(this.lblStatus);
+
+        pnlSouth.add(pnlWords);
+        pnlSouth.add(pnlStatus);
 
         this.add(pnlSouth, BorderLayout.SOUTH);
     }
@@ -233,7 +240,6 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
         JTextArea curr = (JTextArea) e.getSource();
         int lines = 1, columns = 1;
-
         int caretpos = curr.getCaretPosition();
 
         try {
@@ -245,11 +251,19 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
         }
 
         updateStatus(lines, columns);
+
+        String words[] = this.txtFile.getText().split("\\s");
+        updateWords(words.length);
     }
 
     private void updateStatus(int lines, int columns) {
 
         this.lblStatus.setText("Line: " + lines + " - Column: " + columns);
+    }
+
+    private void updateWords(int words) {
+
+        this.lblWords.setText("Words: " + words);
     }
 
     public static void main(String[] args) {
