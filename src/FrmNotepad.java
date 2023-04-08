@@ -26,6 +26,8 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
         setSize(800, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("notepad.png")));
+
 
         initUI();
         populate();
