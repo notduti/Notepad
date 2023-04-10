@@ -20,6 +20,7 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     private JMenuItem mniExit = null;
     private JLabel lblWords = null;
     private JLabel lblStatus = null;
+
     private FrmNotepad() {
 
         setTitle("Notepad");
@@ -226,7 +227,6 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
     }
 
     //DOCUMENT LISTENER
-
     @Override
     public void insertUpdate(DocumentEvent e) { this.modified = true; }
 
@@ -254,8 +254,10 @@ public class FrmNotepad extends JFrame implements ActionListener, DocumentListen
 
         updateStatus(lines, columns);
 
+        int rem = 0;
         String words[] = this.txtFile.getText().split("\\s");
-        updateWords(words.length);
+        for(String s: words) if(s.compareTo("") == 0) rem += 1;
+        updateWords(words.length - rem);
     }
 
     private void updateStatus(int lines, int columns) {
